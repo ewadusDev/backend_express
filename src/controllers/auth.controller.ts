@@ -1,15 +1,13 @@
-import { Request, Response, Router } from "express";
+import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../types/user";
-import { authenticateToken, AuthenticatedRequest } from "../middleware/auth";
+import { AuthenticatedRequest } from "../middleware/auth.middleware";
 
-const router = Router();
-const users: User[] = [];
 const JWT_SECRET = "mysecretkey";
+const users: User[] = [];
 
-// สมัครสมาชิก
-router.post("/register", async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
   const existingUser = users.find((u) => u.username === username);
@@ -29,10 +27,9 @@ router.post("/register", async (req: Request, res: Response) => {
   users.push(newUser);
 
   res.status(201).json({ message: "สมัครสมาชิกสำเร็จ" });
-});
+};
 
-// เข้าสู่ระบบ
-router.post("/login", async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
   const user = users.find((u) => u.username === username);
@@ -49,18 +46,11 @@ router.post("/login", async (req: Request, res: Response) => {
 
   const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1h" });
   res.json({ token });
-});
+};
 
-// เข้าถึงโปรไฟล์
-router.get(
-  "/profile",
-  authenticateToken,
-  (req: AuthenticatedRequest, res: Response) => {
-    res.json({
-      message: "คุณเข้าถึงข้อมูลโปรไฟล์ได้ เพราะส่ง Token มาถูกต้องแล้ว",
-      userId: req.userId,
-    });
-  }
-);
-
-export default router;
+export const getProfile = (req: AuthenticatedRequest, res: Response) => {
+  res.json({
+    message: "คุณเข้าถึงข้อมูลโปรไฟล์ได้ เพราะส่ง Token มาถูกต้องแล้ว",
+    userId: req.userId,
+  });
+};
