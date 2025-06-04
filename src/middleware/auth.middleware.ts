@@ -6,6 +6,7 @@ const JWT_SECRET = "mysecretkey"; // ต้องตรงกับที่ใ�
 // เพิ่มข้อมูลผู้ใช้ลงใน req
 export interface AuthenticatedRequest extends Request {
   userId?: string;
+  username?: string;
 }
 
 export function authenticateToken(
@@ -22,8 +23,12 @@ export function authenticateToken(
   }
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const payload = jwt.verify(token, JWT_SECRET) as {
+      userId: string;
+      username: string;
+    };
     req.userId = payload.userId;
+    req.username = payload.username;
     next();
   } catch (err) {
     res.status(403).json({ message: "Token ไม่ถูกต้องหรือหมดอายุ" });

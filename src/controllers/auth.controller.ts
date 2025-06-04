@@ -44,7 +44,11 @@ export const login = async (req: Request, res: Response) => {
     return;
   }
 
-  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1h" });
+  const token = jwt.sign(
+    { userId: user.id, username: user.username },
+    JWT_SECRET,
+    { expiresIn: "1h" }
+  );
   res.json({ token });
 };
 
@@ -52,5 +56,6 @@ export const getProfile = (req: AuthenticatedRequest, res: Response) => {
   res.json({
     message: "คุณเข้าถึงข้อมูลโปรไฟล์ได้ เพราะส่ง Token มาถูกต้องแล้ว",
     userId: req.userId,
+    username: req.username,
   });
 };

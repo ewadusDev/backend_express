@@ -6,7 +6,6 @@ const router = Router();
 
 // สมัครสมาชิก
 router.post("/register", register);
-
 // เข้าสู่ระบบ
 router.post("/login", login);
 // เข้าถึงโปรไฟล์
