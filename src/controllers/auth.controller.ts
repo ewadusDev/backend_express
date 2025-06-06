@@ -49,11 +49,11 @@ export const login = async (req: Request, res: Response) => {
     JWT_SECRET,
     { expiresIn: "1h" }
   );
-  res.json({ token });
+  res.status(200).json({ token, message: "เข้าสู่ระบบสำเร็จ" });
 };
 
 export const getProfile = (req: AuthenticatedRequest, res: Response) => {
-  res.json({
+  res.status(200).json({
     message: "คุณเข้าถึงข้อมูลโปรไฟล์ได้ เพราะส่ง Token มาถูกต้องแล้ว",
     userId: req.userId,
     username: req.username,
