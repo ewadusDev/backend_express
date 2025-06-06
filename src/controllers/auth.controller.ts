@@ -3,8 +3,14 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../types/user";
 import { AuthenticatedRequest } from "../middleware/auth.middleware";
-import { JWT_SECRET } from "../config/env";
 import { users } from "../data/user.data";
+import {
+  JWT_SECRET,
+  REFRESH_SECRET,
+  ACCESS_TOKEN_EXPIRES_IN,
+  REFRESH_TOKEN_EXPIRES_IN,
+} from "../config/jwt.config";
+import { refreshTokens } from "../data/token.data";
 
 export const register = async (req: Request, res: Response) => {
   const { username, password } = req.body;
@@ -46,10 +52,43 @@ export const login = async (req: Request, res: Response) => {
   const accesstoken = jwt.sign(
     { userId: user.id, username: user.username },
     JWT_SECRET,
-    { expiresIn: "15m" }
+    { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
   );
 
-  res.status(200).json({ accesstoken, message: "เข้าสู่ระบบสำเร็จ" });
+  const refreshToken = jwt.sign(
+    { userId: user.id, username: user.username },
+    REFRESH_SECRET,
+    {
+      expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+    }
+  );
+
+  refreshTokens.push(refreshToken);
+
+  res
+    .status(200)
+    .json({ accesstoken, refreshToken, message: "เข้าสู่ระบบสำเร็จ" });
+};
+
+export const refreshAccessToken = (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken || !refreshTokens.includes(refreshToken)) {
+    res.status(403).json({ message: "ไม่มี refresh token หรือไม่ถูกต้อง" });
+    return;
+  }
+
+  try {
+    const payload = jwt.verify(refreshToken, REFRESH_SECRET) as {
+      userId: string;
+    };
+    const newAccessToken = jwt.sign({ userId: payload.userId }, JWT_SECRET, {
+      expiresIn: ACCESS_TOKEN_EXPIRES_IN,
+    });
+    res.json({ accessToken: newAccessToken });
+  } catch (err) {
+    res.status(403).json({ message: "refresh token หมดอายุหรือไม่ถูกต้อง" });
+    return;
+  }
 };
 
 export const getProfile = (req: AuthenticatedRequest, res: Response) => {

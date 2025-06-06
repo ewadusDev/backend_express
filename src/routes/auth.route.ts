@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { authenticateToken } from "../middleware/auth.middleware";
-import { register, login, getProfile } from "../controllers/auth.controller";
+import {
+  register,
+  login,
+  getProfile,
+  refreshAccessToken,
+} from "../controllers/auth.controller";
 
 const router = Router();
 
@@ -11,8 +16,6 @@ router.post("/login", login);
 // เข้าถึงโปรไฟล์
 router.get("/profile", authenticateToken, getProfile);
 // get refrech token
-router.post("/refresh-token", (req, res) => {
-  const { userId, refreshToken } = req.body;
-});
+router.post("/refresh-token", refreshAccessToken);
 
 export default router;
