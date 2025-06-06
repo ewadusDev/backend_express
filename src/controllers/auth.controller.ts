@@ -3,9 +3,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../types/user";
 import { AuthenticatedRequest } from "../middleware/auth.middleware";
-
-const JWT_SECRET = "mysecretkey";
-const users: User[] = [];
+import { JWT_SECRET } from "../config/env";
+import { users } from "../data/user.data";
 
 export const register = async (req: Request, res: Response) => {
   const { username, password } = req.body;
@@ -44,12 +43,13 @@ export const login = async (req: Request, res: Response) => {
     return;
   }
 
-  const token = jwt.sign(
+  const accesstoken = jwt.sign(
     { userId: user.id, username: user.username },
     JWT_SECRET,
-    { expiresIn: "1h" }
+    { expiresIn: "15m" }
   );
-  res.status(200).json({ token, message: "เข้าสู่ระบบสำเร็จ" });
+
+  res.status(200).json({ accesstoken, message: "เข้าสู่ระบบสำเร็จ" });
 };
 
 export const getProfile = (req: AuthenticatedRequest, res: Response) => {

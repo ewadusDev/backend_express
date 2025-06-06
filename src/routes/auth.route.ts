@@ -10,5 +10,9 @@ router.post("/register", register);
 router.post("/login", login);
 // เข้าถึงโปรไฟล์
 router.get("/profile", authenticateToken, getProfile);
+// get refrech token
+router.post("/refresh-token", (req, res) => {
+  const { userId, refreshToken } = req.body;
+});
 
 export default router;
