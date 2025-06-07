@@ -49,7 +49,7 @@ export const login = async (req: Request, res: Response) => {
     return;
   }
 
-  const accesstoken = jwt.sign(
+  const accessToken = jwt.sign(
     { userId: user.id, username: user.username },
     JWT_SECRET,
     { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
@@ -67,7 +67,7 @@ export const login = async (req: Request, res: Response) => {
 
   res
     .status(200)
-    .json({ accesstoken, refreshToken, message: "เข้าสู่ระบบสำเร็จ" });
+    .json({ accessToken, refreshToken, message: "เข้าสู่ระบบสำเร็จ" });
 };
 
 export const refreshAccessToken = (req: Request, res: Response) => {
