@@ -5,6 +5,7 @@ import {
   login,
   getProfile,
   refreshAccessToken,
+  logout,
 } from "../controllers/auth.controller";
 
 const router = Router();
@@ -17,5 +18,7 @@ router.post("/login", login);
 router.get("/profile", authenticateToken, getProfile);
 // get refrech token
 router.post("/refresh-token", refreshAccessToken);
+// logout
+router.post("/logout", logout);
 
 export default router;

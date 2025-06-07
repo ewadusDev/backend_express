@@ -10,7 +10,7 @@ import {
   ACCESS_TOKEN_EXPIRES_IN,
   REFRESH_TOKEN_EXPIRES_IN,
 } from "../config/jwt.config";
-import { refreshTokens } from "../data/token.data";
+import { store } from "../data/token.data";
 
 export const register = async (req: Request, res: Response) => {
   const { username, password } = req.body;
@@ -63,7 +63,7 @@ export const login = async (req: Request, res: Response) => {
     }
   );
 
-  refreshTokens.push(refreshToken);
+  store.refreshTokens.push(refreshToken);
 
   res
     .status(200)
@@ -72,7 +72,7 @@ export const login = async (req: Request, res: Response) => {
 
 export const refreshAccessToken = (req: Request, res: Response) => {
   const { refreshToken } = req.body;
-  if (!refreshToken || !refreshTokens.includes(refreshToken)) {
+  if (!refreshToken || !store.refreshTokens.includes(refreshToken)) {
     res.status(403).json({ message: "ไม่มี refresh token หรือไม่ถูกต้อง" });
     return;
   }
@@ -97,4 +97,24 @@ export const getProfile = (req: AuthenticatedRequest, res: Response) => {
     userId: req.userId,
     username: req.username,
   });
+};
+
+export const logout = (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    res.status(400).json({ message: "ต้องส่ง refreshToken มาด้วย" });
+    return;
+  }
+  if (!store.refreshTokens.includes(refreshToken)) {
+    res.status(403).json({ message: "refresh token ไม่ถูกต้อง" });
+    return;
+  }
+
+  const newArray = store.refreshTokens.filter(
+    (token) => token !== refreshToken
+  );
+  store.refreshTokens = newArray;
+  res.status(200).json({ message: "ออกจากระบบสำเร็จ" });
+  return;
 };

@@ -1,1 +1,3 @@
-export const refreshTokens: string[] = [];
+export const store = {
+  refreshTokens: [] as string[],
+};
