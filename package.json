@@ -16,8 +16,10 @@
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.29",
     "bcrypt": "^6.0.0",
+    "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "redis": "^5.5.6",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.3",
     "uuid": "^11.1.0"

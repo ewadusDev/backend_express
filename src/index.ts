@@ -1,8 +1,12 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+const PORT = process.env.PORT || 3000;
+
 import express from "express";
 import authRoutes from "./routes/auth.route";
 
 const app = express();
-const PORT = 3000;
 
 // Middleware สำหรับแปลง JSON request body
 app.use(express.json());

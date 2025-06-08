@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../types/user";
 import { AuthenticatedRequest } from "../middleware/auth.middleware";
+import redisClient from "../lib/redis";
 import { users } from "../data/user.data";
 import {
   JWT_SECRET,
@@ -10,7 +11,6 @@ import {
   ACCESS_TOKEN_EXPIRES_IN,
   REFRESH_TOKEN_EXPIRES_IN,
 } from "../config/jwt.config";
-import { store } from "../data/token.data";
 
 export const register = async (req: Request, res: Response) => {
   const { username, password } = req.body;
@@ -52,27 +52,29 @@ export const login = async (req: Request, res: Response) => {
   const accessToken = jwt.sign(
     { userId: user.id, username: user.username },
     JWT_SECRET,
-    { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
+    { expiresIn: ACCESS_TOKEN_EXPIRES_IN as number }
   );
 
   const refreshToken = jwt.sign(
     { userId: user.id, username: user.username },
     REFRESH_SECRET,
     {
-      expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+      expiresIn: REFRESH_TOKEN_EXPIRES_IN as number,
     }
   );
 
-  store.refreshTokens.push(refreshToken);
+  await redisClient.set(refreshToken, user.id, { EX: 7 * 24 * 60 * 60 });
 
   res
     .status(200)
     .json({ accessToken, refreshToken, message: "เข้าสู่ระบบสำเร็จ" });
 };
 
-export const refreshAccessToken = (req: Request, res: Response) => {
+export const refreshAccessToken = async (req: Request, res: Response) => {
   const { refreshToken } = req.body;
-  if (!refreshToken || !store.refreshTokens.includes(refreshToken)) {
+  const redis = await redisClient.exists(refreshToken);
+
+  if (!refreshToken || !redis) {
     res.status(403).json({ message: "ไม่มี refresh token หรือไม่ถูกต้อง" });
     return;
   }
@@ -82,7 +84,7 @@ export const refreshAccessToken = (req: Request, res: Response) => {
       userId: string;
     };
     const newAccessToken = jwt.sign({ userId: payload.userId }, JWT_SECRET, {
-      expiresIn: ACCESS_TOKEN_EXPIRES_IN,
+      expiresIn: ACCESS_TOKEN_EXPIRES_IN as number,
     });
     res.json({ accessToken: newAccessToken });
   } catch (err) {
@@ -99,22 +101,15 @@ export const getProfile = (req: AuthenticatedRequest, res: Response) => {
   });
 };
 
-export const logout = (req: Request, res: Response) => {
+export const logout = async (req: Request, res: Response) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
     res.status(400).json({ message: "ต้องส่ง refreshToken มาด้วย" });
     return;
   }
-  if (!store.refreshTokens.includes(refreshToken)) {
-    res.status(403).json({ message: "refresh token ไม่ถูกต้อง" });
-    return;
-  }
+  await redisClient.del(refreshToken);
 
-  const newArray = store.refreshTokens.filter(
-    (token) => token !== refreshToken
-  );
-  store.refreshTokens = newArray;
   res.status(200).json({ message: "ออกจากระบบสำเร็จ" });
   return;
 };

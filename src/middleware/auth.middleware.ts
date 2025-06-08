@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = "mysecretkey"; // ต้องตรงกับที่ใช้ใน auth.ts
+import { JWT_SECRET } from "../config/jwt.config";
 
 // เพิ่มข้อมูลผู้ใช้ลงใน req
 export interface AuthenticatedRequest extends Request {
